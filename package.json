@@ -10,6 +10,7 @@
     "format": "prettier . --write",
     "dev": "npm run build && node build/index.js"
   },
+  "type": "module",
   "author": "ericandow@gmail.com",
   "license": "MIT",
   "devDependencies": {
