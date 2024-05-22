@@ -1,0 +1,24 @@
+{
+  "name": "space-traders-automator",
+  "version": "0.1.0",
+  "description": "A little Typescript/Node sever to make the spaceships go vroom while I'm offline",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "check": "tsc --noEmit",
+    "format": "prettier . --write",
+    "dev": "npm run build && node build/index.js"
+  },
+  "author": "ericandow@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^9.3.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@zodios/core": "^10.9.6",
+    "zod": "^3.23.8"
+  }
+}
