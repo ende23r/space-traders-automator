@@ -29,8 +29,6 @@ let latestShipList = await getShipList();
 // P5: mine X
 // P6: hauler sell
 async function doTopPriority() {
-  console.log("Doing top priority");
-
   const hauler = latestShipList.find(
     (ship: any) => ship.symbol === haulerSymbol,
   );
@@ -56,10 +54,6 @@ async function doTopPriority() {
     (cargo) => !allowedGoods.includes(cargo.symbol),
   );
 
-  console.log({
-    hauler: hauler?.cargo.inventory,
-    miner: miner?.cargo.inventory,
-  });
   if (hauler && hauler.nav.status === "DOCKED" && hauler.fuel.current < 100) {
     const result = await fuelShip(haulerSymbol);
     console.log(result);
