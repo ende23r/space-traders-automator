@@ -30,8 +30,57 @@ const bearerPostHeaders = (token = bearerToken) => {
   };
 };
 
+type None = {
+  unwrap: () => never;
+};
+type Some<T> = {
+  unwrap: () => T;
+};
+type Option<T> = Some<T> | None;
+
+function makeNone(_item?: unknown): None {
+  return {
+    unwrap: () => {
+      throw new Error("Unwrapped None");
+    },
+  };
+}
+function makeSome<T>(item: T): Some<T> {
+  return {
+    unwrap: () => item,
+  };
+}
+function makeOption<T>(item: T): Option<NonNullable<T>> {
+  if (item === null || item === undefined) {
+    return makeNone(item);
+  } else {
+    return makeSome(item);
+  }
+}
+
+// TODO: make this return a more specific type than any
+function safeAsyncQuery(
+  originalMethod: any,
+  _context?: ClassMethodDecoratorContext,
+) {
+  async function safeMethod(this: any, ...args: any[]) {
+    try {
+      return makeOption(await originalMethod(args));
+    } catch (e) {
+      console.error(e);
+      return makeNone();
+    }
+  }
+
+  return safeMethod;
+}
+
+export const queryShipList = safeAsyncQuery(async () => {
+  return await api["get-my-ships"](bearerOptions());
+});
+
 export async function getShipList() {
-  const { data } = await api["get-my-ships"](bearerOptions());
+  const { data } = (await queryShipList()).unwrap();
   return data;
 }
 

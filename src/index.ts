@@ -43,14 +43,17 @@ async function doTopPriority() {
     haulerResting &&
     (hauler?.cargo.units || 0) >= 38 &&
     hauler?.nav.waypointSymbol !== marketPlace;
+  // @ts-ignore
   const cargoToSell = hauler?.cargo.inventory.find((cargo) =>
     allowedGoods.includes(cargo.symbol),
   );
 
+  // @ts-ignore
   const cargoToTransfer = miner?.cargo.inventory.find((cargo) =>
     allowedGoods.includes(cargo.symbol),
   );
   const cargoToJettison = miner?.cargo.inventory.find(
+    // @ts-ignore
     (cargo) => !allowedGoods.includes(cargo.symbol),
   );
 
