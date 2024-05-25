@@ -2,13 +2,13 @@ import {
   dock,
   extract,
   fuelShip,
-  getShipList,
   jettisonCargo,
   navShip,
   sellCargo,
   transferCargo,
   undock,
 } from "./Api.js";
+import { getShipList } from "./Controller.js";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,10 +29,8 @@ let latestShipList = await getShipList();
 // P5: mine X
 // P6: hauler sell
 async function doTopPriority() {
-  const hauler = latestShipList.find(
-    (ship: any) => ship.symbol === haulerSymbol,
-  );
-  const miner = latestShipList.find((ship: any) => ship.symbol === minerSymbol);
+  const hauler = latestShipList.ships[haulerSymbol];
+  const miner = latestShipList.ships[minerSymbol];
 
   const haulerResting = hauler?.nav.status !== "IN_TRANSIT";
   const readyToHaul =
