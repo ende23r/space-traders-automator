@@ -1,3 +1,4 @@
+import { Ship } from "./Api.js";
 import {
   getGameState,
   dockShip,
@@ -20,9 +21,42 @@ const minerSymbol = "CINNAMON_SWIRL-3";
 const allowedGoods = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
 const miningOutpost = "X1-RV45-EC5X";
 const marketPlace = "X1-RV45-H63";
+
+interface Pilot {
+  // TODO: get type for priorities/actions
+  getPriorities(): any[];
+}
+const pilots: Pilot[] = [];
+const registerPilot = (pilot: Pilot) => pilots.push(pilot);
+
+class DumbMiner implements Pilot {
+  ship: Ship | null;
+  loaded: boolean;
+  constructor(shipSymbol: string) {
+    this.ship = null;
+    this.loaded = false;
+    this.loadShipData(shipSymbol);
+  }
+
+  async loadShipData(shipSymbol: string) {
+    const gameState = await getGameState();
+    this.ship = gameState.shipMap[shipSymbol];
+    this.loaded = true;
+  }
+
+  getPriorities() {
+    if (!this.loaded) {
+      return [];
+    }
+    return [];
+  }
+}
+registerPilot(new DumbMiner(minerSymbol));
+
 const gameState = await getGameState();
+
 // Very basic AI
-// P1: hauler gas X
+// P1: hauler fuel X
 // P2: hauler nav X
 // P3: filter from miner X
 // P4: transfer to hauler X

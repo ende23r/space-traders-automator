@@ -15,6 +15,7 @@ import {
   navShip,
   sellCargo,
   transferCargo,
+  getShip,
 } from "./Api.js";
 
 let gameState: GameState;
@@ -37,6 +38,17 @@ class GameState {
     });
     // TODO: preload waypoints
   }
+}
+
+export async function reloadShip(shipSymbol: string) {
+  const { shipMap } = await getGameState();
+  console.log(`Reloading ${shipSymbol}`);
+  const result = await getShip(shipSymbol);
+
+  if (!shipMap[shipSymbol]) {
+    shipMap[shipSymbol] = result;
+  }
+  Object.assign(shipMap[shipSymbol], result);
 }
 
 export async function dockShip(shipSymbol: string) {
@@ -71,6 +83,7 @@ export async function shipExtract(shipSymbol: string) {
     console.log({ events });
   }
   Object.assign(shipMap[shipSymbol], { cooldown, cargo });
+  setTimeout(() => reloadShip(shipSymbol), cooldown.totalSeconds * 1000);
 }
 
 export async function fuelShip(shipSymbol: string) {

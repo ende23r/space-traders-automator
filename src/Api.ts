@@ -96,6 +96,24 @@ export async function getShipList(): Promise<Ship[]> {
   return response.unwrap().data;
 }
 
+export async function queryShip(shipSymbol: string) {
+  const options = {
+    headers: bearerHeaders(),
+    params: {
+      shipSymbol,
+    },
+  };
+  return await safeQuery(() => api["get-my-ship"](options));
+}
+
+export async function getShip(shipSymbol: string) {
+  const response = await queryShip(shipSymbol);
+  if (!response.hasData) {
+    throw new Error("retrying unimplemented!");
+  }
+  return response.unwrap().data;
+}
+
 export async function fuel(shipSymbol: string) {
   const options = { headers: bearerPostHeaders(), params: { shipSymbol } };
   const { data } = await api["refuel-ship"]({}, options);
