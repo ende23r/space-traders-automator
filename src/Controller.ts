@@ -16,6 +16,7 @@ import {
   sellCargo,
   transferCargo,
   getShip,
+  queryShipList,
 } from "./Api.js";
 
 let gameState: GameState;
@@ -27,7 +28,7 @@ export async function getGameState() {
   return gameState;
 }
 
-class GameState {
+export class GameState {
   /** Mapping from ship symbol to ship data */
   shipMap: Record<string, Ship> = {};
   async preload() {
@@ -37,6 +38,30 @@ class GameState {
       this.shipMap[ship.symbol] = ship;
     });
     // TODO: preload waypoints
+  }
+}
+
+export async function* incrementalLoad() {
+  const { shipMap } = await getGameState();
+  let page = 0;
+  let maxPages = 1;
+  while (true) {
+    if (page >= maxPages) {
+      page = 0;
+    }
+
+    const response = await queryShipList(page);
+    page += 1;
+    if (!response.hasData) {
+      yield;
+      continue;
+    }
+    const data = response.unwrap();
+    maxPages = Math.ceil(data.meta.total / data.meta.limit);
+    data.data.forEach((ship) => {
+      Object.assign(shipMap[ship.symbol], ship);
+    });
+    yield;
   }
 }
 
@@ -126,6 +151,9 @@ export async function navigateShip(
     console.log({ events });
   }
   Object.assign(shipMap[shipSymbol], { fuel, nav });
+  const arrivalDelay = Date.parse(nav.route.arrival) - Date.now();
+  console.log(`Arriving in ${arrivalDelay}`);
+  setTimeout(() => reloadShip(shipSymbol), arrivalDelay);
 }
 
 export async function sellShipCargo(
