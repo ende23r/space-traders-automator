@@ -106,10 +106,11 @@ export async function queryShip(shipSymbol: string) {
   return await safeQuery(() => api["get-my-ship"](options));
 }
 
-export async function getShip(shipSymbol: string) {
+export async function getShip(shipSymbol: string): Promise<Ship | null> {
   const response = await queryShip(shipSymbol);
   if (!response.hasData) {
-    throw new Error("retrying unimplemented!");
+    // Try getting away without providing any new data
+    return null;
   }
   return response.unwrap().data;
 }

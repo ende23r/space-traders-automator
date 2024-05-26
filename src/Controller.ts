@@ -69,6 +69,10 @@ export async function reloadShip(shipSymbol: string) {
   const { shipMap } = await getGameState();
   console.log(`Reloading ${shipSymbol}`);
   const result = await getShip(shipSymbol);
+  if (!result) {
+    setTimeout(() => reloadShip(shipSymbol), 1000);
+    return;
+  }
 
   if (!shipMap[shipSymbol]) {
     shipMap[shipSymbol] = result;

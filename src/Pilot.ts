@@ -234,11 +234,15 @@ export class OneRouteHauler implements Pilot {
               minerMounts.includes(shipMount.symbol),
             ),
         );
+      // console.log({ nearbyMiners })
 
       nearbyMiners.forEach((miner) => {
         miner.cargo.inventory
           .filter((good) => this.sellableGoods.includes(good.symbol))
           .forEach((good) => {
+            console.log(
+              `Can get ${good.units} ${good.symbol} from ${miner.symbol}`,
+            );
             nonCooldownActions.push({
               priority: 39,
               callback: async () => {
