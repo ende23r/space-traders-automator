@@ -3,7 +3,7 @@
  * This provides a transparent layer in front of the API methods.
  */
 
-import { Ship, getShipList, dock, undock } from "./Api.js";
+import { Ship, getShipList, dock, undock, extract } from "./Api.js";
 
 let gameState: GameState;
 export async function getGameState() {
@@ -45,4 +45,18 @@ export async function undockShip(shipSymbol: string) {
 
   const resultState = await undock(shipSymbol);
   Object.assign(shipMap[shipSymbol], resultState);
+}
+
+export async function shipExtract(shipSymbol: string) {
+  const { shipMap } = await getGameState();
+  if (!shipMap.hasOwnProperty(shipSymbol)) {
+    throw new Error(`You do not own a ship with the symbol ${shipSymbol}`);
+  }
+
+  const { cooldown, extraction, cargo, events } = await extract(shipSymbol);
+  console.log({ extraction });
+  if (events.length > 0) {
+    console.log({ events });
+  }
+  Object.assign(shipMap[shipSymbol], { cooldown, cargo });
 }

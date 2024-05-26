@@ -6,7 +6,12 @@ import {
   sellCargo,
   transferCargo,
 } from "./Api.js";
-import { getGameState, dockShip, undockShip } from "./Controller.js";
+import {
+  getGameState,
+  dockShip,
+  undockShip,
+  shipExtract,
+} from "./Controller.js";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -57,15 +62,13 @@ async function doTopPriority() {
     const result = await fuelShip(haulerSymbol);
     console.log(result);
   } else if (readyToHaul) {
-    const result1 = await undockShip(haulerSymbol);
-    console.log(result1);
+    await undockShip(haulerSymbol);
     // nav to haul spot
     const result2 = await navShip(haulerSymbol, miningOutpost);
     console.log(result2);
   } else if (readyToSell) {
     // await undock
-    const result1 = await undockShip(haulerSymbol);
-    console.log(result1);
+    undockShip(haulerSymbol);
     // nav to haul spot
     const result2 = await navShip(haulerSymbol, marketPlace);
     console.log(result2);
@@ -94,15 +97,13 @@ async function doTopPriority() {
     miner.cargo.units < miner.cargo.capacity &&
     miner.cooldown.remainingSeconds === 0
   ) {
-    const result = await extract(minerSymbol);
-    console.log(result);
+    await shipExtract(minerSymbol);
   } else if (
     cargoToSell &&
     haulerResting &&
     hauler?.nav.waypointSymbol === marketPlace
   ) {
-    const result1 = await dockShip(haulerSymbol);
-    console.log(result1);
+    await dockShip(haulerSymbol);
     const result2 = await sellCargo(
       haulerSymbol,
       cargoToSell.symbol,
