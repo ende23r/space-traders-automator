@@ -1,14 +1,12 @@
 import {
-  dock,
   extract,
   fuelShip,
   jettisonCargo,
   navShip,
   sellCargo,
   transferCargo,
-  undock,
 } from "./Api.js";
-import { getShipList } from "./Controller.js";
+import { getGameState, dockShip, undockShip } from "./Controller.js";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -20,7 +18,7 @@ const minerSymbol = "CINNAMON_SWIRL-3";
 const allowedGoods = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
 const miningOutpost = "X1-RV45-EC5X";
 const marketPlace = "X1-RV45-H63";
-let latestShipList = await getShipList();
+const gameState = await getGameState();
 // Very basic AI
 // P1: hauler gas X
 // P2: hauler nav X
@@ -29,8 +27,8 @@ let latestShipList = await getShipList();
 // P5: mine X
 // P6: hauler sell
 async function doTopPriority() {
-  const hauler = latestShipList.ships[haulerSymbol];
-  const miner = latestShipList.ships[minerSymbol];
+  const hauler = gameState.shipMap[haulerSymbol];
+  const miner = gameState.shipMap[minerSymbol];
 
   const haulerResting = hauler?.nav.status !== "IN_TRANSIT";
   const readyToHaul =
@@ -59,14 +57,14 @@ async function doTopPriority() {
     const result = await fuelShip(haulerSymbol);
     console.log(result);
   } else if (readyToHaul) {
-    const result1 = await undock(haulerSymbol);
+    const result1 = await undockShip(haulerSymbol);
     console.log(result1);
     // nav to haul spot
     const result2 = await navShip(haulerSymbol, miningOutpost);
     console.log(result2);
   } else if (readyToSell) {
     // await undock
-    const result1 = await undock(haulerSymbol);
+    const result1 = await undockShip(haulerSymbol);
     console.log(result1);
     // nav to haul spot
     const result2 = await navShip(haulerSymbol, marketPlace);
@@ -103,7 +101,7 @@ async function doTopPriority() {
     haulerResting &&
     hauler?.nav.waypointSymbol === marketPlace
   ) {
-    const result1 = await dock(haulerSymbol);
+    const result1 = await dockShip(haulerSymbol);
     console.log(result1);
     const result2 = await sellCargo(
       haulerSymbol,
@@ -119,11 +117,14 @@ async function doTopPriority() {
 // May want to bump up to 500 later if we want to push the performance
 const MS_PER_FRAME = 700;
 async function main() {
+  // const gameState = getGameState();
   while (true) {
+    // await dockShip("CINNAMON_SWIRL-3");
+    // console.log((await gameState).shipMap["CINNAMON_SWIRL-3"].nav)
     await doTopPriority();
     await sleep(MS_PER_FRAME);
-    latestShipList = await getShipList();
-    await sleep(MS_PER_FRAME);
+    // TODO: refresh ship list
+    // await sleep(MS_PER_FRAME);
   }
 }
 
