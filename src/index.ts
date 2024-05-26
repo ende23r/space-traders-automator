@@ -1,16 +1,13 @@
 import {
-  extract,
-  fuelShip,
-  jettisonCargo,
-  navShip,
-  sellCargo,
-  transferCargo,
-} from "./Api.js";
-import {
   getGameState,
   dockShip,
   undockShip,
+  navigateShip,
   shipExtract,
+  fuelShip,
+  sellShipCargo,
+  transferShipCargo,
+  jettisonShipCargo,
 } from "./Controller.js";
 
 function sleep(ms: number) {
@@ -59,39 +56,34 @@ async function doTopPriority() {
   );
 
   if (hauler && hauler.nav.status === "DOCKED" && hauler.fuel.current < 100) {
-    const result = await fuelShip(haulerSymbol);
-    console.log(result);
+    await fuelShip(haulerSymbol);
   } else if (readyToHaul) {
     await undockShip(haulerSymbol);
     // nav to haul spot
-    const result2 = await navShip(haulerSymbol, miningOutpost);
-    console.log(result2);
+    await navigateShip(haulerSymbol, miningOutpost);
   } else if (readyToSell) {
     // await undock
     undockShip(haulerSymbol);
     // nav to haul spot
-    const result2 = await navShip(haulerSymbol, marketPlace);
-    console.log(result2);
+    await navigateShip(haulerSymbol, marketPlace);
   } else if (
     hauler &&
     hauler.nav.waypointSymbol === miningOutpost &&
     haulerResting &&
     cargoToTransfer
   ) {
-    const result = await transferCargo({
-      from: minerSymbol,
-      to: haulerSymbol,
+    await transferShipCargo({
+      fromShipSymbol: minerSymbol,
+      toShipSymbol: haulerSymbol,
       tradeSymbol: cargoToTransfer.symbol,
-      units: cargoToTransfer.units,
+      quantity: cargoToTransfer.units,
     });
-    console.log(result);
   } else if (cargoToJettison) {
-    const result = await jettisonCargo(
+    await jettisonShipCargo(
       minerSymbol,
       cargoToJettison.symbol,
       cargoToJettison.units,
     );
-    console.log(result);
   } else if (
     miner &&
     miner.cargo.units < miner.cargo.capacity &&
@@ -104,14 +96,9 @@ async function doTopPriority() {
     hauler?.nav.waypointSymbol === marketPlace
   ) {
     await dockShip(haulerSymbol);
-    const result2 = await sellCargo(
-      haulerSymbol,
-      cargoToSell.symbol,
-      cargoToSell.units,
-    );
-    console.log(result2);
+    await sellShipCargo(haulerSymbol, cargoToSell.symbol, cargoToSell.units);
   } else {
-    console.log("Could not pick a priority!");
+    // console.log("Could not pick a priority!");
   }
 }
 

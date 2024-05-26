@@ -55,6 +55,7 @@ function makeSome<T>(item: T): Some<T> {
     hasData: true,
   };
 }
+/*
 function makeOption<T>(item: T): Option<NonNullable<T>> {
   if (item === null || item === undefined) {
     return makeNone(item);
@@ -62,6 +63,7 @@ function makeOption<T>(item: T): Option<NonNullable<T>> {
     return makeSome(item);
   }
 }
+*/
 
 // TODO: make this return a more specific type than any
 async function safeQuery<P extends Promise<any>>(
@@ -94,7 +96,7 @@ export async function getShipList(): Promise<Ship[]> {
   return response.unwrap().data;
 }
 
-export async function fuelShip(shipSymbol: string) {
+export async function fuel(shipSymbol: string) {
   const options = { headers: bearerPostHeaders(), params: { shipSymbol } };
   const { data } = await api["refuel-ship"]({}, options);
   return data;
