@@ -80,20 +80,29 @@ async function safeQuery<P extends Promise<any>>(
 export async function queryShipList(page: number) {
   const options = {
     headers: bearerHeaders(),
-    query: {
+    queries: {
       page,
+      limit: 20,
     },
   };
   return await safeQuery(() => api["get-my-ships"](options));
 }
 
-// TODO: make this query more than one page.
 export async function getShipList(): Promise<Ship[]> {
-  const response = await queryShipList(0);
+  const response = await queryShipList(1);
   if (!response.hasData) {
     return [];
   }
-  return response.unwrap().data;
+
+  let page = 1;
+  const shipResponse = response.unwrap();
+  const shipList = shipResponse.data;
+  while (shipList.length < shipResponse.meta.total) {
+    page += 1;
+    const pageResponse = (await queryShipList(page)).unwrap();
+    shipList.push(...pageResponse.data);
+  }
+  return shipList;
 }
 
 export async function queryShip(shipSymbol: string) {

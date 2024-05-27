@@ -19,7 +19,7 @@ const allowedGoods: TradeSymbol[] = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
 const miningOutpost = "X1-RV45-EC5X";
 const marketPlace = "X1-RV45-H63";
 
-const gameState = await getGameState();
+const _gameState = await getGameState();
 
 const registeredPilots: Pilot[] = [];
 const registerPilot = (pilot: Pilot) => registeredPilots.push(pilot);
