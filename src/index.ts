@@ -19,16 +19,22 @@ const allowedGoods: TradeSymbol[] = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
 const miningOutpost = "X1-RV45-EC5X";
 const marketPlace = "X1-RV45-H63";
 
-const _gameState = await getGameState();
+const gameState = await getGameState();
 
 const registeredPilots: Pilot[] = [];
 const registerPilot = (pilot: Pilot) => registeredPilots.push(pilot);
 
 minerSymbols.forEach((minerSymbol) =>
-  registerPilot(new DumbMiner(minerSymbol)),
+  registerPilot(new DumbMiner(gameState, minerSymbol)),
 );
 registerPilot(
-  new OneRouteHauler(haulerSymbol, miningOutpost, marketPlace, allowedGoods),
+  new OneRouteHauler(
+    gameState,
+    haulerSymbol,
+    miningOutpost,
+    marketPlace,
+    allowedGoods,
+  ),
 );
 
 function getSystemPriority() {

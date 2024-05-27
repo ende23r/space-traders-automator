@@ -48,14 +48,8 @@ const minerMounts = [
 ];
 
 export class DumbMiner implements Pilot {
-  ship: Ship | null;
-  constructor(shipSymbol: string) {
-    this.ship = null;
-    this.loadShipData(shipSymbol);
-  }
-
-  async loadShipData(shipSymbol: string) {
-    const gameState = await getGameState();
+  ship: Ship;
+  constructor(gameState: GameState, shipSymbol: string) {
     this.ship = gameState.shipMap[shipSymbol];
   }
 
@@ -128,27 +122,23 @@ export class DumbMiner implements Pilot {
 }
 
 export class OneRouteHauler implements Pilot {
-  gameState: GameState | undefined;
-  ship: Ship | null;
+  gameState: GameState;
+  ship: Ship;
   readonly sourceWaypoint: string;
   readonly destWaypoint: string;
   readonly sellableGoods: TradeSymbol[];
   constructor(
+    gameState: GameState,
     shipSymbol: string,
     buyWaypoint: string,
     sellWaypoint: string,
     sellableGoods: TradeSymbol[],
   ) {
-    this.ship = null;
+    this.gameState = gameState;
+    this.ship = this.gameState.shipMap[shipSymbol];
     this.sourceWaypoint = buyWaypoint;
     this.destWaypoint = sellWaypoint;
     this.sellableGoods = sellableGoods;
-    this.initShipData(shipSymbol);
-  }
-
-  async initShipData(shipSymbol: string) {
-    this.gameState = await getGameState();
-    this.ship = this.gameState.shipMap[shipSymbol];
   }
 
   /*

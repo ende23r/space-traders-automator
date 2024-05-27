@@ -19,26 +19,39 @@ import {
   queryShipList,
 } from "./Api.js";
 
-let gameState: GameState;
-export async function getGameState() {
-  if (!gameState) {
-    gameState = new GameState();
-    await gameState.preload();
-  }
-  return gameState;
+// How do we handle preloading in a nice way?
+// We'd like our script to have access to all ships and waypoints in the system
+// And we'd also like it to load data on systems over time
+// Actually, do I even care about other systems?
+// No.
+// So, conclusion: I don't care about late-loading.
+export type GameState = {
+  /** Mapping from ship symbol to ship data */
+  shipMap: Record<string, Ship>;
+  /** TODO: Mapping from waypoint symbol to waypoint data */
+  /** TODO: Market data? */
+  /** TODO: Shipyard data? */
+};
+async function getInitialGameState(): Promise<GameState> {
+  console.log("Preloading...");
+  // Load all ships
+  const shipMap: GameState["shipMap"] = {};
+  const shipArr = await getShipList();
+  shipArr.forEach((ship) => {
+    shipMap[ship.symbol] = ship;
+  });
+  // TODO: preload waypoints
+
+  console.log("Preloading finished!");
+  return { shipMap };
 }
 
-export class GameState {
-  /** Mapping from ship symbol to ship data */
-  shipMap: Record<string, Ship> = {};
-  async preload() {
-    // Preload ship list
-    const shipArr = await getShipList();
-    shipArr.forEach((ship) => {
-      this.shipMap[ship.symbol] = ship;
-    });
-    // TODO: preload waypoints
+let globalGameState: GameState | undefined;
+export async function getGameState(): Promise<GameState> {
+  if (!globalGameState) {
+    globalGameState = await getInitialGameState();
   }
+  return globalGameState;
 }
 
 export async function* incrementalLoad() {
