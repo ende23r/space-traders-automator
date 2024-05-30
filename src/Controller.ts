@@ -39,6 +39,20 @@ async function getInitialGameState(): Promise<GameState> {
   const shipArr = await getShipList();
   shipArr.forEach((ship) => {
     shipMap[ship.symbol] = ship;
+    if (ship.cooldown.remainingSeconds > 0) {
+      setTimeout(
+        () => reloadShip(ship.symbol),
+        (ship.cooldown.remainingSeconds + 1) * 1000,
+      );
+    }
+    const arrivalTimestamp = Date.parse(ship.nav.route.arrival);
+    const currentTimestamp = Date.now();
+    if (arrivalTimestamp > currentTimestamp) {
+      setTimeout(
+        () => reloadShip(ship.symbol),
+        arrivalTimestamp - currentTimestamp,
+      );
+    }
   });
   // TODO: preload waypoints
 
