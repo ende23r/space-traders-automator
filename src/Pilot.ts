@@ -19,7 +19,6 @@ import {
   GameState,
   dockShip,
   fuelShip,
-  getGameState,
   jettisonShipCargo,
   navigateShip,
   sellShipCargo,
@@ -37,10 +36,6 @@ export interface Pilot {
   getPriorities(): PilotAction[];
 }
 
-const allowedGoods = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
-const miningOutpost = "X1-RV45-EC5X";
-const commonOreMarket = "X1-RV45-H63";
-
 const minerMounts = [
   "MOUNT_MINING_LASER_I",
   "MOUNT_MINING_LASER_II",
@@ -49,8 +44,17 @@ const minerMounts = [
 
 export class DumbMiner implements Pilot {
   ship: Ship;
-  constructor(gameState: GameState, shipSymbol: string) {
+  miningWaypoint: string;
+  allowedGoods: string[];
+  constructor(
+    gameState: GameState,
+    shipSymbol: string,
+    miningWaypoint: string,
+    allowedGoods: string[],
+  ) {
     this.ship = gameState.shipMap[shipSymbol];
+    this.miningWaypoint = miningWaypoint;
+    this.allowedGoods = allowedGoods;
   }
 
   getPriorities() {
@@ -65,13 +69,13 @@ export class DumbMiner implements Pilot {
       return [];
     }
 
-    if (this.ship.nav.waypointSymbol !== miningOutpost) {
+    if (this.ship.nav.waypointSymbol !== this.miningWaypoint) {
       return [
         {
           priority: 49,
           callback: async () => {
             await undockShip(shipSymbol);
-            await navigateShip(shipSymbol, miningOutpost);
+            await navigateShip(shipSymbol, this.miningWaypoint);
           },
         },
       ];
@@ -96,7 +100,7 @@ export class DumbMiner implements Pilot {
     const nonCooldownActions: PilotAction[] = [];
     const [_cargoToTransfer, cargoToFilter] = partition(
       this.ship.cargo.inventory,
-      (good) => allowedGoods.includes(good.symbol),
+      (good) => this.allowedGoods.includes(good.symbol),
     );
     /*
     if (cargoToTransfer) {
@@ -127,18 +131,21 @@ export class OneRouteHauler implements Pilot {
   readonly sourceWaypoint: string;
   readonly destWaypoint: string;
   readonly sellableGoods: TradeSymbol[];
+  readonly fuelThreshold: number;
   constructor(
     gameState: GameState,
     shipSymbol: string,
     buyWaypoint: string,
     sellWaypoint: string,
     sellableGoods: TradeSymbol[],
+    fuelThreshold: number,
   ) {
     this.gameState = gameState;
     this.ship = this.gameState.shipMap[shipSymbol];
     this.sourceWaypoint = buyWaypoint;
     this.destWaypoint = sellWaypoint;
     this.sellableGoods = sellableGoods;
+    this.fuelThreshold = fuelThreshold;
   }
 
   /*
@@ -163,7 +170,7 @@ export class OneRouteHauler implements Pilot {
 
     // # Ship necessities
     // 50 - Refuel
-    if (this.ship.fuel.current < 24) {
+    if (this.ship.fuel.current < this.fuelThreshold) {
       return [
         {
           priority: 50,

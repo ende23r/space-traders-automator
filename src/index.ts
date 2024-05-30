@@ -7,12 +7,21 @@ function sleep(ms: number) {
 }
 
 const haulerSymbol = "CINNAMON_SWIRL-4";
-const minerSymbols = [
+const group1Miners = [
   "CINNAMON_SWIRL-3",
   "CINNAMON_SWIRL-5",
   "CINNAMON_SWIRL-6",
   "CINNAMON_SWIRL-7",
   "CINNAMON_SWIRL-8",
+];
+
+// Group 2 (hauler is -B)
+const group2Miners = [
+  "CINNAMON_SWIRL-9",
+  "CINNAMON_SWIRL-A",
+  "CINNAMON_SWIRL-C",
+  "CINNAMON_SWIRL-D",
+  "CINNAMON_SWIRL-E",
 ];
 
 const allowedGoods: TradeSymbol[] = ["IRON_ORE", "ALUMINUM_ORE", "COPPER_ORE"];
@@ -21,12 +30,21 @@ const marketPlace = "X1-RV45-H63";
 
 const gameState = await getGameState();
 
+// TODO: make it so that only 1 pilot can control each ship
 const registeredPilots: Pilot[] = [];
 const registerPilot = (pilot: Pilot) => registeredPilots.push(pilot);
 
-minerSymbols.forEach((minerSymbol) =>
-  registerPilot(new DumbMiner(gameState, minerSymbol)),
+group1Miners.forEach((minerSymbol) =>
+  registerPilot(
+    new DumbMiner(gameState, minerSymbol, miningOutpost, allowedGoods),
+  ),
 );
+group2Miners.forEach((minerSymbol) =>
+  registerPilot(
+    new DumbMiner(gameState, minerSymbol, "X1-RV45-B14", allowedGoods),
+  ),
+);
+// Group 1 hauler
 registerPilot(
   new OneRouteHauler(
     gameState,
@@ -34,6 +52,18 @@ registerPilot(
     miningOutpost,
     marketPlace,
     allowedGoods,
+    24,
+  ),
+);
+// Group 2 hauler
+registerPilot(
+  new OneRouteHauler(
+    gameState,
+    "CINNAMON_SWIRL-B",
+    "X1-RV45-B14",
+    marketPlace,
+    allowedGoods,
+    290,
   ),
 );
 
@@ -64,9 +94,6 @@ const MS_PER_FRAME = 700;
 async function main() {
   // const gameState = getGameState();
   while (true) {
-    // await dockShip("CINNAMON_SWIRL-3");
-    // console.log((await gameState).shipMap["CINNAMON_SWIRL-3"].nav)
-    // await doTopPriority();
     await doPilotPriority();
     await sleep(MS_PER_FRAME);
     // TODO: refresh ship list
